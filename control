@@ -1,0 +1,9 @@
+Package: com.ryannair05.hades
+Name: Hades
+Depends: mobilesubstrate
+Version: 2.0
+Architecture: iphoneos-arm
+Description: iPhone X gestures and buttons.
+Maintainer: Ryan Nair
+Author: Ryan Nair 
+Section: Tweaks
