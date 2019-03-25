@@ -38,3 +38,44 @@
     %orig(NSClassFromString(@"UIStatusBar_Modern"));
 }
 %end
+%hook UIRemoteKeyboardWindowHosted
+- (UIEdgeInsets)safeAreaInsets {
+    UIEdgeInsets orig = %orig;
+    orig.bottom = 44;
+    return orig;
+}
+%end
+
+%hook UIKeyboardImpl
++(UIEdgeInsets)deviceSpecificPaddingForInterfaceOrientation:(NSInteger)orientation inputMode:(id)mode {
+    UIEdgeInsets orig = %orig;
+    orig.bottom = 44;
+    return orig;
+}
+
+%end
+
+@interface UIKeyboardDockView : UIView
+@end
+
+%hook UIKeyboardDockView
+
+- (CGRect)bounds {
+    CGRect bounds = %orig;
+    if (bounds.origin.y == 0) {
+        bounds.origin.y -=13;
+    }
+    return bounds;
+}
+
+- (void)layoutSubviews {
+    %orig;
+}
+
+%end
+
+%hook UIInputWindowController
+- (UIEdgeInsets)_viewSafeAreaInsetsFromScene {
+    return UIEdgeInsetsMake(0,0,44,0);
+}
+%end
