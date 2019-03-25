@@ -103,7 +103,6 @@ static BOOL wantsHomeBar = YES;
 }
 %end
 
-%end
 %hook UIScreen
 + (UIEdgeInsets)sc_safeAreaInsets {
 	UIEdgeInsets orig = %orig;
