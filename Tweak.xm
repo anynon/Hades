@@ -1,3 +1,5 @@
+static BOOL wantsHomeBar = YES;
+
 // Enable home gestures
 %hook BSPlatform
 - (NSInteger)homeButtonType {
@@ -15,6 +17,7 @@
 }
 %end
 
+//Statusbar
 %hook _UIStatusBarVisualProvider_iOS
 + (Class)class {
     return NSClassFromString(@"_UIStatusBarVisualProvider_Split58");
@@ -38,6 +41,8 @@
     %orig(NSClassFromString(@"UIStatusBar_Modern"));
 }
 %end
+
+//Keyboard
 %hook UIRemoteKeyboardWindowHosted
 - (UIEdgeInsets)safeAreaInsets {
     UIEdgeInsets orig = %orig;
@@ -77,5 +82,83 @@
 %hook UIInputWindowController
 - (UIEdgeInsets)_viewSafeAreaInsetsFromScene {
     return UIEdgeInsetsMake(0,0,44,0);
+}
+%end
+
+
+/Homebar
+%hook UIScreen
+- (UIEdgeInsets)_sceneSafeAreaInsets {
+	UIEdgeInsets orig = %orig;
+	if (orig.bottom == 34) orig.bottom = wantsHomeBar ? bottomBarInset : 0;
+	return orig;
+}
+%end
+
+%hook UIRemoteKeyboardWindowHosted
+- (UIEdgeInsets)safeAreaInsets {
+	UIEdgeInsets orig = %orig;
+	orig.bottom = wantsKeyboardDock ? 44 : (wantsHomeBar ? bottomBarInset : 0);	
+	return orig;
+}
+%end
+
+%end
+%hook UIScreen
++ (UIEdgeInsets)sc_safeAreaInsets {
+	UIEdgeInsets orig = %orig;
+	orig.top = 0;
+	orig.bottom = wantsHomeBar ? [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets].bottom : 0;
+	return orig;
+}
+
++ (UIEdgeInsets)sc_safeAreaInsetsForInterfaceOrientation:(UIInterfaceOrientation)orientation {
+	if (UIInterfaceOrientationIsLandscape(orientation)) {
+		UIEdgeInsets insets = [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets];
+		return UIEdgeInsetsMake(0, wantsStatusBar ? insets.top : 20, 0, wantsHomeBar ? insets.bottom : 0);
+	} else {
+		UIEdgeInsets orig = %orig;
+		orig.top = 0;
+		orig.bottom = wantsHomeBar ? [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets].bottom : 0;
+		return orig;
+	}
+}
+
++ (UIEdgeInsets)sc_visualSafeInsets {
+ 	UIEdgeInsets orig = %orig;
+	orig.top = 0;
+	orig.bottom = wantsHomeBar ? [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets].bottom : 0;
+	return orig;
+}
+
++ (UIEdgeInsets)sc_filterSafeInsets {
+ 	UIEdgeInsets insets = [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets];
+	return UIEdgeInsetsMake(wantsStatusBar ? insets.top : 20,0,0,0);
+}
+
++ (UIEdgeInsets)sc_headerSafeInsets {
+	UIEdgeInsets insets = [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets];
+	return UIEdgeInsetsMake(wantsStatusBar ? insets.top : 20,0,0,0);
+}
+
++ (UIEdgeInsets)sc_safeFooterButtonInset {
+	UIEdgeInsets insets = [[NSClassFromString(@"UIScreen") mainScreen] _sceneSafeAreaInsets];
+	return %orig;
+}
+
++ (CGFloat)sc_headerHeight {
+	CGFloat orig = %orig;
+	return orig;
+}
+%end
+%hook UIWindow
+- (UIEdgeInsets)safeAreaInsets {
+	UIEdgeInsets orig = %orig;
+	if (orig.top > 30) orig.bottom = wantsHomeBar ? bottomBarInset : 0;
+	else {
+		if (orig.left < 10) orig.left = wantsHomeBar ? bottomBarInset : 0;
+		else if (orig.right < 10) orig.right = wantsHomeBar ? bottomBarInset : 0; 
+	}
+	return orig;
 }
 %end
